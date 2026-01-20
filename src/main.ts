@@ -7,12 +7,10 @@ const config: Phaser.Types.Core.GameConfig = {
   parent: 'game-container',
   backgroundColor: '#1a1a2e',
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 800,
-    height: 600,
-    min: { width: 400, height: 300 },
-    max: { width: 1600, height: 1200 }
+    width: '100%',
+    height: '100%'
   },
   physics: {
     default: 'arcade',
@@ -23,7 +21,7 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   scene: [BootScene, GameScene],
   input: {
-    activePointers: 1
+    activePointers: 2
   },
   fps: {
     target: 60,

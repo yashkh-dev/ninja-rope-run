@@ -1,7 +1,7 @@
 // Main Game Scene - Ninja Rope Run
 
 import Phaser from 'phaser';
-import { CONFIG } from '../config/GameConfig';
+import { CONFIG, updateConfig } from '../config/GameConfig';
 import { GameManager } from '../systems/GameManager';
 import { GrappleSystem } from '../systems/GrappleSystem';
 import { LevelSpawner } from '../systems/LevelSpawner';
@@ -30,6 +30,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     create(): void {
+        // Update config for current screen size
+        updateConfig();
+
         // Reset game state
         GameManager.reset();
 
@@ -53,13 +56,17 @@ export class GameScene extends Phaser.Scene {
         // Setup camera
         this.setupCamera();
 
-        // Instructions
+        // Handle resize events
+        this.scale.on('resize', this.handleResize, this);
+
+        // Instructions with dynamic font size
+        const fontSize = Math.max(16, Math.min(24, this.scale.width * 0.04));
         const instructions = this.add.text(
             this.scale.width / 2,
             this.scale.height / 2,
             '👆 HOLD to grapple\n🎯 Release to swing',
             {
-                fontSize: '24px',
+                fontSize: `${fontSize}px`,
                 fontFamily: 'Arial, sans-serif',
                 color: '#ffffff',
                 align: 'center',
@@ -76,6 +83,22 @@ export class GameScene extends Phaser.Scene {
                 onComplete: () => instructions.destroy()
             });
         });
+    }
+
+    private handleResize(gameSize: Phaser.Structs.Size): void {
+        // Update config with new dimensions
+        updateConfig();
+
+        // Update backgrounds to new size
+        if (this.bgFar) {
+            this.bgFar.setSize(gameSize.width, gameSize.height);
+        }
+        if (this.bgMid) {
+            this.bgMid.setSize(gameSize.width * 2, gameSize.height);
+        }
+
+        // Update camera bounds
+        this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, gameSize.height);
     }
 
     private createBackgrounds(): void {
