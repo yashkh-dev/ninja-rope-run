@@ -1,5 +1,5 @@
 // UI Manager - HUD and Game Over panel
-// Now with responsive design for portrait screens
+// Optimized for 1080p portrait mobile display
 
 import Phaser from 'phaser';
 import { GameManager } from '../systems/GameManager';
@@ -25,29 +25,27 @@ export class UIManager {
 
         this.createHUD();
         this.createGameOverPanel();
-
-        // Listen for resize events
-        this.scene.scale.on('resize', this.handleResize, this);
     }
 
+    // Get font sizes scaled for 1080p base
     private getFontSizes() {
-        const baseSize = Math.min(this.scene.scale.width, this.scene.scale.height);
-        const scale = Math.max(0.6, Math.min(1.2, baseSize / 500));
+        const baseWidth = 1080;
+        const scale = this.scene.scale.width / baseWidth;
 
         return {
-            score: Math.round(24 * scale),
-            best: Math.round(16 * scale),
-            scroll: Math.round(20 * scale),
-            title: Math.round(32 * scale),
-            button: Math.round(22 * scale),
-            panel: Math.round(20 * scale)
+            score: Math.round(48 * scale),
+            best: Math.round(32 * scale),
+            scroll: Math.round(40 * scale),
+            title: Math.round(64 * scale),
+            button: Math.round(44 * scale),
+            panel: Math.round(40 * scale)
         };
     }
 
     private createHUD(): void {
         const { width } = this.scene.scale;
         const fonts = this.getFontSizes();
-        const padding = Math.max(10, width * 0.03);
+        const padding = Math.round(width * 0.04);
 
         // Score (top center)
         this.scoreText = this.scene.add.text(width / 2, padding, 'Score: 0', {
@@ -56,7 +54,7 @@ export class UIManager {
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: 3
+            strokeThickness: 6
         }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(100);
 
         // Best score (top right)
@@ -65,7 +63,7 @@ export class UIManager {
             fontFamily: 'Arial, sans-serif',
             color: '#ffd700',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 4
         }).setOrigin(1, 0).setScrollFactor(0).setDepth(100);
 
         // Scroll count (top left)
@@ -74,7 +72,7 @@ export class UIManager {
             fontFamily: 'Arial, sans-serif',
             color: '#f5deb3',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 4
         }).setOrigin(0, 0).setScrollFactor(0).setDepth(100);
     }
 
@@ -82,9 +80,10 @@ export class UIManager {
         const { width, height } = this.scene.scale;
         const fonts = this.getFontSizes();
 
-        // Scale panel size based on screen
-        const panelWidth = Math.min(300, width * 0.85);
-        const panelHeight = Math.min(280, height * 0.5);
+        // Scale panel size based on 1080p reference
+        const scale = width / 1080;
+        const panelWidth = Math.round(600 * scale);
+        const panelHeight = Math.round(500 * scale);
         const halfW = panelWidth / 2;
         const halfH = panelHeight / 2;
 
@@ -93,25 +92,27 @@ export class UIManager {
         this.gameOverContainer.setDepth(200);
         this.gameOverContainer.setVisible(false);
 
-        // Background panel
+        // Background panel with gradient effect
         const bg = this.scene.add.graphics();
-        bg.fillStyle(0x000000, 0.9);
-        bg.fillRoundedRect(-halfW, -halfH, panelWidth, panelHeight, 15);
-        bg.lineStyle(3, 0xffd700);
-        bg.strokeRoundedRect(-halfW, -halfH, panelWidth, panelHeight, 15);
+        bg.fillStyle(0x000000, 0.92);
+        bg.fillRoundedRect(-halfW, -halfH, panelWidth, panelHeight, 24 * scale);
+        bg.lineStyle(6 * scale, 0xffd700);
+        bg.strokeRoundedRect(-halfW, -halfH, panelWidth, panelHeight, 24 * scale);
         this.gameOverContainer.add(bg);
 
         // Title
-        const title = this.scene.add.text(0, -halfH + 35, 'GAME OVER', {
+        const title = this.scene.add.text(0, -halfH + 70 * scale, 'GAME OVER', {
             fontSize: `${fonts.title}px`,
             fontFamily: 'Arial, sans-serif',
             color: '#ff4444',
-            fontStyle: 'bold'
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 4
         }).setOrigin(0.5);
         this.gameOverContainer.add(title);
 
         // Score
-        this.finalScoreText = this.scene.add.text(0, -20, 'Score: 0', {
+        this.finalScoreText = this.scene.add.text(0, -20 * scale, 'Score: 0', {
             fontSize: `${fonts.score}px`,
             fontFamily: 'Arial, sans-serif',
             color: '#ffffff'
@@ -119,21 +120,30 @@ export class UIManager {
         this.gameOverContainer.add(this.finalScoreText);
 
         // Best
-        this.finalBestText = this.scene.add.text(0, 25, 'Best: 0', {
+        this.finalBestText = this.scene.add.text(0, 50 * scale, 'Best: 0', {
             fontSize: `${fonts.panel}px`,
             fontFamily: 'Arial, sans-serif',
             color: '#ffd700'
         }).setOrigin(0.5);
         this.gameOverContainer.add(this.finalBestText);
 
-        // Retry button
-        const btnWidth = Math.min(160, panelWidth * 0.7);
-        const btnHeight = 50;
-        const retryBtn = this.scene.add.container(0, halfH - 60);
+        // Retry button - larger and more prominent
+        const btnWidth = Math.round(320 * scale);
+        const btnHeight = Math.round(100 * scale);
+        const retryBtn = this.scene.add.container(0, halfH - 100 * scale);
 
+        // Button shadow
+        const btnShadow = this.scene.add.graphics();
+        btnShadow.fillStyle(0x2E7D32, 1);
+        btnShadow.fillRoundedRect(-btnWidth / 2 + 4, -btnHeight / 2 + 4, btnWidth, btnHeight, 16 * scale);
+        retryBtn.add(btnShadow);
+
+        // Button background
         const btnBg = this.scene.add.graphics();
         btnBg.fillStyle(0x4CAF50);
-        btnBg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 10);
+        btnBg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 16 * scale);
+        btnBg.lineStyle(4 * scale, 0x81C784);
+        btnBg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 16 * scale);
         retryBtn.add(btnBg);
 
         const btnText = this.scene.add.text(0, 0, '🔄 RETRY', {
@@ -162,30 +172,6 @@ export class UIManager {
             .on('pointerout', () => retryBtn.setScale(1));
 
         this.gameOverContainer.add(retryBtn);
-    }
-
-    private handleResize(gameSize: Phaser.Structs.Size): void {
-        const fonts = this.getFontSizes();
-        const padding = Math.max(10, gameSize.width * 0.03);
-
-        // Update HUD positions and sizes
-        if (this.scoreText) {
-            this.scoreText.setPosition(gameSize.width / 2, padding);
-            this.scoreText.setFontSize(fonts.score);
-        }
-        if (this.bestText) {
-            this.bestText.setPosition(gameSize.width - padding, padding);
-            this.bestText.setFontSize(fonts.best);
-        }
-        if (this.scrollText) {
-            this.scrollText.setPosition(padding, padding);
-            this.scrollText.setFontSize(fonts.scroll);
-        }
-
-        // Update game over panel position
-        if (this.gameOverContainer) {
-            this.gameOverContainer.setPosition(gameSize.width / 2, gameSize.height / 2);
-        }
     }
 
     public update(): void {
@@ -224,7 +210,6 @@ export class UIManager {
     }
 
     public destroy(): void {
-        this.scene.scale.off('resize', this.handleResize, this);
         this.scoreText.destroy();
         this.bestText.destroy();
         this.scrollText.destroy();

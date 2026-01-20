@@ -1,63 +1,64 @@
 // ============= GAME CONFIGURATION =============
-// All tunable constants in one place for easy tweaking
-// Now with dynamic scaling for portrait/landscape support
+// Optimized for 1080p portrait mobile display (sharp visuals)
 
 // Helper to detect portrait mode
 export const isPortrait = (): boolean => window.innerHeight > window.innerWidth;
 
-// Get scale factor based on screen size (base reference: 800x600)
-export const getScaleFactor = (): number => {
-    const baseSize = Math.min(800, 600);
-    const currentSize = Math.min(window.innerWidth, window.innerHeight);
-    return Math.max(0.5, Math.min(1.5, currentSize / baseSize));
+// Get game dimensions (1080p base for sharp rendering)
+export const getGameDimensions = () => {
+    if (isPortrait()) {
+        const aspectRatio = window.innerHeight / window.innerWidth;
+        return { width: 1080, height: Math.round(1080 * aspectRatio) };
+    }
+    return { width: 1920, height: 1080 };
 };
 
 // Dynamic config that adapts to screen orientation
 export const getConfig = () => {
-    const scale = getScaleFactor();
+    const dims = getGameDimensions();
     const portrait = isPortrait();
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = dims.width;
+    const height = dims.height;
 
     return {
         // === MOVEMENT ===
-        baseSpeed: 140 * scale,              // Initial horizontal speed (px/s)
-        speedRampPerSecond: 1.5,             // Speed increase per second
-        maxSpeed: 380 * scale,               // Maximum horizontal speed
-        gravityY: 1000 * scale,              // Gravity strength
+        baseSpeed: 200,                      // Initial horizontal speed (px/s)
+        speedRampPerSecond: 2,               // Speed increase per second
+        maxSpeed: 500,                       // Maximum horizontal speed
+        gravityY: 1400,                      // Gravity strength
 
         // === GRAPPLE ===
-        maxGrappleDistance: (portrait ? 300 : 380) * scale,     // Max distance to attach to hook
-        minForwardDistance: 25 * scale,      // Hook must be this far ahead of player
-        minRopeLength: 50 * scale,           // Minimum rope length
-        maxRopeLength: (portrait ? 250 : 300) * scale,          // Maximum rope length
-        ropeDamping: 0.997,                  // Damping (closer to 1 = less damping, better swing)
+        maxGrappleDistance: portrait ? 500 : 550,       // Max distance to attach to hook
+        minForwardDistance: 40,              // Hook must be this far ahead of player
+        minRopeLength: 80,                   // Minimum rope length
+        maxRopeLength: portrait ? 420 : 480,            // Maximum rope length
+        ropeDamping: 0.997,                  // Damping
         ropeStiffness: 0.15,                 // How quickly rope corrects distance
         swingBoostOnRelease: 1.2,            // Velocity multiplier on release
 
         // === CAMERA ===
-        cameraLookAhead: (portrait ? 100 : 160) * scale,        // Camera leads player by this much
-        playerScreenX: portrait ? 0.35 : 0.25,         // Player position (0-1 from left)
+        cameraLookAhead: portrait ? 180 : 280,          // Camera leads player by this much
+        playerScreenX: portrait ? 0.35 : 0.25,          // Player position (0-1 from left)
         cameraSmoothX: 0.12,                 // Camera lerp speed X
         cameraSmoothY: 0.08,                 // Camera lerp speed Y
 
         // === LEVEL GENERATION ===
-        spawnAheadDistance: (portrait ? 800 : 1100) * scale,    // Spawn platforms this far ahead
-        despawnBehindDistance: 600 * scale,  // Remove platforms this far behind
-        platformMinLength: (portrait ? 120 : 180) * scale,      // Minimum platform width
-        platformMaxLength: (portrait ? 250 : 350) * scale,      // Maximum platform width
-        platformHeight: 40 * scale,          // Platform thickness
-        gapMin: (portrait ? 100 : 140) * scale,                 // Minimum gap between platforms
-        gapMax: (portrait ? 180 : 260) * scale,                 // Maximum gap between platforms
-        hookHeightMin: (portrait ? 80 : 110) * scale,           // Min height above platform for hooks
-        hookHeightMax: (portrait ? 160 : 220) * scale,          // Max height above platform for hooks
-        hooksPerPlatformMin: portrait ? 2 : 2,      // Minimum hooks per platform
-        hooksPerPlatformMax: portrait ? 4 : 3,      // Maximum hooks per platform (more hooks in portrait)
+        spawnAheadDistance: portrait ? 1400 : 1800,     // Spawn platforms this far ahead
+        despawnBehindDistance: 900,          // Remove platforms this far behind
+        platformMinLength: portrait ? 220 : 300,        // Minimum platform width
+        platformMaxLength: portrait ? 400 : 550,        // Maximum platform width
+        platformHeight: 60,                  // Platform thickness
+        gapMin: portrait ? 180 : 220,                   // Minimum gap between platforms
+        gapMax: portrait ? 320 : 420,                   // Maximum gap between platforms
+        hookHeightMin: portrait ? 160 : 180,            // Min height above platform for hooks
+        hookHeightMax: portrait ? 320 : 360,            // Max height above platform for hooks
+        hooksPerPlatformMin: 2,              // Minimum hooks per platform
+        hooksPerPlatformMax: portrait ? 4 : 3,          // Maximum hooks per platform
 
         // === DIFFICULTY RAMP ===
         difficultyRampInterval: 15000,       // Ms between difficulty increases
-        gapIncreasePerRamp: 20 * scale,      // Gap increase per ramp
-        speedIncreasePerRamp: 12 * scale,    // Speed increase per ramp
+        gapIncreasePerRamp: 35,              // Gap increase per ramp
+        speedIncreasePerRamp: 20,            // Speed increase per ramp
         spikeChanceStart: 0.1,               // Initial spike probability
         spikeChanceMax: 0.4,                 // Maximum spike probability
         spikeChanceIncreasePerRamp: 0.04,
@@ -67,34 +68,33 @@ export const getConfig = () => {
         distanceScoreMultiplier: 0.1,        // Points per pixel traveled
         scrollSpawnChance: 0.7,              // Chance to spawn scroll per platform
 
-        // === BOUNDS (dynamic based on screen) ===
-        killY: height + 100,                 // Y position that triggers death
-        groundY: height * (portrait ? 0.75 : 0.8),              // Base ground level for platforms
-        platformYVariation: 50 * scale,      // Random Y offset for platforms
+        // === BOUNDS ===
+        killY: height + 200,                 // Y position that triggers death
+        groundY: height * (portrait ? 0.7 : 0.75),      // Base ground level for platforms
+        platformYVariation: 100,             // Random Y offset for platforms
 
         // === VISUALS ===
-        playerRadius: 18 * scale,            // Player circle radius
-        hookRadius: 10 * scale,              // Hook point radius
-        scrollSize: 20 * scale,              // Scroll collectible size
-        spikeWidth: 30 * scale,              // Spike base width
-        spikeHeight: 25 * scale,             // Spike height
+        playerRadius: 28,                    // Player circle radius
+        hookRadius: 16,                      // Hook point radius
+        scrollSize: 32,                      // Scroll collectible size
+        spikeWidth: 45,                      // Spike base width
+        spikeHeight: 40,                     // Spike height
+        ropeWidth: 4,                        // Rope line width
 
         // === SCREEN INFO ===
         isPortrait: portrait,
         screenWidth: width,
-        screenHeight: height,
-        scaleFactor: scale
+        screenHeight: height
     };
 };
 
-// Static CONFIG for backwards compatibility (will be updated on resize)
+// Static CONFIG
 export let CONFIG = getConfig();
 
-// Function to update config on resize
+// Function to update config
 export const updateConfig = () => {
     CONFIG = getConfig();
     return CONFIG;
 };
 
-// Type export for TypeScript
 export type GameConfig = ReturnType<typeof getConfig>;

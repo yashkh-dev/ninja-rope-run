@@ -2,15 +2,36 @@ import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { GameScene } from './scenes/GameScene';
 
+// Calculate base dimensions for 1080p quality on portrait mobile
+const getGameDimensions = () => {
+  const isPortrait = window.innerHeight > window.innerWidth;
+  if (isPortrait) {
+    // Portrait: 1080 width base, height scales with aspect ratio for sharp mobile display
+    const aspectRatio = window.innerHeight / window.innerWidth;
+    return { width: 1080, height: Math.round(1080 * aspectRatio) };
+  } else {
+    // Landscape: 1920x1080
+    return { width: 1920, height: 1080 };
+  }
+};
+
+const dims = getGameDimensions();
+
 const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: Phaser.WEBGL,
   parent: 'game-container',
   backgroundColor: '#1a1a2e',
   scale: {
-    mode: Phaser.Scale.RESIZE,
+    mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: '100%',
-    height: '100%'
+    width: dims.width,
+    height: dims.height
+  },
+  render: {
+    pixelArt: false,
+    antialias: true,
+    antialiasGL: true,
+    roundPixels: false
   },
   physics: {
     default: 'arcade',
